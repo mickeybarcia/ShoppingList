@@ -35,6 +35,7 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "expo-cli": "^5.4.12",
     "prettier": "^2.7.1"
   },
   "private": true
