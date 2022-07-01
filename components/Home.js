@@ -11,11 +11,11 @@ import HideKeyboard from './HideKeyboard';
 import db from '../FirebaseDb';
 
 const Item = (name, isLow = false) => {
-  name, isLow;
+  return { name, isLow };
 };
 
 const List = (name, items = []) => {
-  name, items;
+  return { name, items };
 };
 
 export default function Home() {
