@@ -8,7 +8,8 @@
     "web": "expo start --web",
     "eject": "expo eject",
     "lint": "eslint . --fix",
-    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "build": "expo build:web"
   },
   "dependencies": {
     "@react-native-firebase/app": "^15.1.1",
