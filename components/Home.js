@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, StyleSheet, View, Switch, Text, TouchableOpacity } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  View,
+  Switch,
+  Text,
+  TouchableOpacity
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ref, onValue, set } from 'firebase/database';
 import { getAuth, signInAnonymously } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ListComponent from './List';
 import InputField from './InputField';
@@ -18,11 +27,14 @@ const List = (name, items = []) => {
   return { name, items };
 };
 
+const STORAGE_KEY = 'board';
+
 export default function Home() {
   const keyboardScrollView = useRef();
   const [board, setBoard] = useState();
   const [lists, setLists] = useState();
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const [showLowOnly, setShowLowOnly] = useState(false);
 
   const reset = () => {
@@ -30,16 +42,18 @@ export default function Home() {
     setLists(null);
     setError('');
     setShowLowOnly(false);
+    setLoading(false);
   };
 
   const getRef = (boardName) => ref(db, `boards/${boardName}`);
 
-  const loadBoard = (boardName) => {
+  const loadBoard = async (boardName) => {
     const boardRef = getRef(boardName);
     onValue(
       boardRef,
       (snapshot) => {
         setError('');
+        setLoading(false);
         if (snapshot.exists()) {
           const data = snapshot.val();
           setLists(JSON.parse(data));
@@ -72,9 +86,23 @@ export default function Home() {
       });
   };
 
+  const storeCurrentBoardName = async (boardName) => {
+    await AsyncStorage.setItem(STORAGE_KEY, boardName);
+  };
+
+  const getCurrentBoardName = async () => {
+    const currentBoard = await AsyncStorage.getItem(STORAGE_KEY);
+    if (currentBoard) loadBoard(currentBoard);
+  };
+
   useEffect(() => {
     signIn();
+    getCurrentBoardName();
   }, []);
+
+  useEffect(() => {
+    if (board) storeCurrentBoardName(board);
+  }, [board]);
 
   useEffect(() => {
     if (board && lists) {
@@ -117,6 +145,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>{board || 'shopping list app'}</Text>
+      {loading && <ActivityIndicator animating={loading} />}
       <HideKeyboard>
         <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
           {error !== '' && (
@@ -124,7 +153,7 @@ export default function Home() {
               <Text style={styles.subHeading}>{error}</Text>
             </View>
           )}
-          {board && lists && (
+          {board && lists && !loading && (
             <ScrollView>
               <View style={styles.topBar}>
                 <Text style={styles.subHeading}>show only low stock items</Text>
@@ -162,7 +191,7 @@ export default function Home() {
               )}
             </ScrollView>
           )}
-          {!board && <BoardForm onLoadBoard={loadBoard} onCreateBoard={loadBoard} />}
+          {!board && !loading && <BoardForm onLoadBoard={loadBoard} onCreateBoard={loadBoard} />}
         </KeyboardAwareScrollView>
       </HideKeyboard>
     </View>
