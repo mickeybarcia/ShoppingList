@@ -37,12 +37,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showLowOnly, setShowLowOnly] = useState(false);
 
-  const reset = () => {
+  const reset = async () => {
     setBoard(null);
     setLists(null);
     setError('');
     setShowLowOnly(false);
     setLoading(false);
+    await AsyncStorage.removeItem(STORAGE_KEY);
   };
 
   const getRef = (boardName) => ref(db, `boards/${boardName}`);
@@ -92,7 +93,11 @@ export default function Home() {
 
   const getCurrentBoardName = async () => {
     const currentBoard = await AsyncStorage.getItem(STORAGE_KEY);
-    if (currentBoard) loadBoard(currentBoard);
+    if (currentBoard) {
+      loadBoard(currentBoard);
+    } else {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -167,16 +172,12 @@ export default function Home() {
                 value={showLowOnly}
               />
               {lists.map(({ name, items }, index) => {
-                const filteredItems = items.filter(
-                  (item) => !showLowOnly || (showLowOnly && item.isLow)
-                );
-                if (filteredItems.length == 0 && showLowOnly) return;
                 return (
                   <View key={index}>
                     <ListComponent
                       index={index}
                       name={name}
-                      items={filteredItems}
+                      items={items}
                       showLowOnly={showLowOnly}
                       onDeleteList={() => deleteList(index)}
                       onAddItem={(itemName) => addItem(index, itemName)}
