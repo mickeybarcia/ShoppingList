@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
+import { AppStyles, WHITE_COLOR, LIGHT_BACKGROUND_COLOR } from '../AppStyles';
 
 const ItemInputField = ({ onAddItem, placeholder }) => {
   const [item, setItem] = useState('');
@@ -15,11 +16,11 @@ const ItemInputField = ({ onAddItem, placeholder }) => {
   return (
     <View style={styles.container}>
       <TextInput
-        style={styles.inputField}
+        style={AppStyles.inputField}
         value={item}
         onChangeText={(text) => setItem(text)}
         placeholder={placeholder || 'new item'}
-        placeholderTextColor={'#fff'}
+        placeholderTextColor={WHITE_COLOR}
         ref={textInput}
         returnKeyType="done"
         onSubmitEditing={() => {
@@ -46,8 +47,8 @@ export default ItemInputField;
 
 const styles = StyleSheet.create({
   container: {
-    borderColor: '#fff',
-    backgroundColor: '#3E3364',
+    borderColor: WHITE_COLOR,
+    backgroundColor: LIGHT_BACKGROUND_COLOR,
     borderWidth: 1,
     marginTop: 20,
     borderRadius: 12,
@@ -57,16 +58,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     maxWidth: 400
   },
-  inputField: {
-    color: '#fff',
-    height: 40,
-    flex: 1
-  },
   button: {
     height: 20,
     width: 20,
     borderRadius: 5,
-    backgroundColor: '#fff',
+    backgroundColor: WHITE_COLOR,
     alignItems: 'center',
     justifyContent: 'center'
   }

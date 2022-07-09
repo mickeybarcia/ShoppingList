@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ref, onValue, set } from 'firebase/database';
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ListComponent from './List';
@@ -18,6 +18,8 @@ import InputField from './InputField';
 import BoardForm from './BoardForm';
 import HideKeyboard from './HideKeyboard';
 import db from '../FirebaseDb';
+import { AppStyles } from '../AppStyles';
+import SignInForm from './SignInForm';
 
 const Item = (name, isLow = false) => {
   return { name, isLow };
@@ -29,12 +31,30 @@ const List = (name, items = []) => {
 
 const STORAGE_KEY = 'board';
 
+const actionCodeSettings = {
+  // URL you want to redirect back to. The domain (www.example.com) for this
+  // URL must be in the authorized domains list in the Firebase Console.
+  url: 'http://localhost:19006/',
+  // This must be true.
+  handleCodeInApp: true,
+  // iOS: {
+  //   bundleId: 'com.example.ios'
+  // },
+  // android: {
+  //   packageName: 'com.example.android',
+  //   installApp: true,
+  //   minimumVersion: '12'
+  // },
+  // dynamicLinkDomain: 'example.page.link'
+};
+
 export default function Home() {
   const keyboardScrollView = useRef();
+  const [email, setEmail] = useState();
   const [board, setBoard] = useState();
   const [lists, setLists] = useState();
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showLowOnly, setShowLowOnly] = useState(false);
 
   const reset = () => {
@@ -74,9 +94,9 @@ export default function Home() {
     return set(boardRef, JSON.stringify(lists));
   };
 
-  const signIn = () => {
+  const signIn = (email) => {
     const auth = getAuth();
-    signInAnonymously(auth)
+    sendSignInLinkToEmail(auth, email, actionCodeSettings)
       .then(() => {
         setError('');
       })
@@ -91,12 +111,17 @@ export default function Home() {
   };
 
   const getCurrentBoardName = async () => {
-    const currentBoard = await AsyncStorage.getItem(STORAGE_KEY);
-    if (currentBoard) loadBoard(currentBoard);
+    const auth = getAuth();
+    console.log(auth)
+    if (auth.currentUser) {
+      console.log(currentUser)
+    }
+    // const currentBoard = await AsyncStorage.getItem(STORAGE_KEY);
+    // if (currentBoard) loadBoard(currentBoard);
   };
 
   useEffect(() => {
-    signIn();
+    // signIn();
     getCurrentBoardName();
   }, []);
 
@@ -150,15 +175,15 @@ export default function Home() {
         <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
           {error !== '' && (
             <View style={styles.error}>
-              <Text style={styles.subHeading}>{error}</Text>
+              <Text style={AppStyles.subHeading}>{error}</Text>
             </View>
           )}
           {board && lists && !loading && (
             <ScrollView>
               <View style={styles.topBar}>
-                <Text style={styles.subHeading}>show only low stock items</Text>
+                <Text style={AppStyles.subHeading}>show only low stock items</Text>
                 <TouchableOpacity onPress={reset}>
-                  <Text style={styles.subHeading}>switch board</Text>
+                  <Text style={AppStyles.subHeading}>switch board</Text>
                 </TouchableOpacity>
               </View>
               <Switch
@@ -191,7 +216,8 @@ export default function Home() {
               )}
             </ScrollView>
           )}
-          {!board && !loading && <BoardForm onLoadBoard={loadBoard} onCreateBoard={loadBoard} />}
+          {false && !board && !loading && <BoardForm onLoadBoard={loadBoard} onCreateBoard={loadBoard} />}
+          {!loading && <SignInForm onSignIn={signIn} />}
         </KeyboardAwareScrollView>
       </HideKeyboard>
     </View>
@@ -210,11 +236,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     maxWidth: 400
-  },
-  subHeading: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '400'
   },
   heading: {
     color: '#fff',

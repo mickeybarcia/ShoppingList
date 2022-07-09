@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import ItemInputField from './InputField';
 import ListItem from './ListItem';
+import { WHITE_COLOR } from '../AppStyles';
 
 const List = ({
   name,
@@ -59,7 +60,6 @@ List.propTypes = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1A3C',
     margin: 20,
     maxWidth: 350
   },
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   heading: {
-    color: '#fff',
+    color: WHITE_COLOR,
     fontSize: 20,
     fontWeight: '500'
   },

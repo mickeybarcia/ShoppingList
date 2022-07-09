@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
+import { LIGHT_BACKGROUND_COLOR, WHITE_COLOR } from '../AppStyles';
 
 const ListItem = ({ item, onSwitchItemStatus, onDeleteItem }) => {
   return (
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   indexContainer: {
-    backgroundColor: '#3E3364',
+    backgroundColor: LIGHT_BACKGROUND_COLOR,
     borderRadius: 12,
     marginRight: 10,
     alignItems: 'center',
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
     height: 30
   },
   itemContainer: {
-    backgroundColor: '#3E3364',
+    backgroundColor: LIGHT_BACKGROUND_COLOR,
     borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     minHeight: 30
   },
   item: {
-    color: '#fff',
+    color: WHITE_COLOR,
     width: '90%',
     fontSize: 16
   },
