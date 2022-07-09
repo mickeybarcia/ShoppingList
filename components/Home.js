@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ref, onValue, set } from 'firebase/database';
-import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
+import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ListComponent from './List';
@@ -29,7 +29,8 @@ const List = (name, items = []) => {
   return { name, items };
 };
 
-const STORAGE_KEY = 'board';
+const BOARD_NAME_KEY = 'board';
+const EMAIL_KEY = 'board';
 
 const actionCodeSettings = {
   // URL you want to redirect back to. The domain (www.example.com) for this
@@ -54,10 +55,10 @@ export default function Home() {
   const [board, setBoard] = useState();
   const [lists, setLists] = useState();
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showLowOnly, setShowLowOnly] = useState(false);
 
-  const reset = () => {
+  const resetBoard = () => {
     setBoard(null);
     setLists(null);
     setError('');
@@ -94,35 +95,61 @@ export default function Home() {
     return set(boardRef, JSON.stringify(lists));
   };
 
-  const signIn = (email) => {
+  const signIn = async (email) => {
     const auth = getAuth();
-    sendSignInLinkToEmail(auth, email, actionCodeSettings)
-      .then(() => {
-        setError('');
-      })
-      .catch((error) => {
-        console.log(error);
-        setError('something went wrong');
-      });
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      setError('');
+      await AsyncStorage.setItem(EMAIL_KEY, email)
+    } catch (error) {
+      console.log(error);
+      setError('something went wrong');
+    }
+    setError('email sent')
   };
 
   const storeCurrentBoardName = async (boardName) => {
-    await AsyncStorage.setItem(STORAGE_KEY, boardName);
+    await AsyncStorage.setItem(BOARD_NAME_KEY, boardName);
   };
 
-  const getCurrentBoardName = async () => {
-    const auth = getAuth();
-    console.log(auth)
-    if (auth.currentUser) {
-      console.log(currentUser)
+  const loadCurrentBoard = async () => {
+    const currentBoard = await AsyncStorage.getItem(BOARD_NAME_KEY);
+    if (currentBoard) {
+      loadBoard(currentBoard);
+    } else {
+      setLoading(false)
     }
-    // const currentBoard = await AsyncStorage.getItem(STORAGE_KEY);
-    // if (currentBoard) loadBoard(currentBoard);
+  }
+
+  const loadPage = async () => {
+    const auth = getAuth();
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        console.log('user logged in')
+        setEmail(user.email)
+        loadCurrentBoard()
+      }
+    });
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = await AsyncStorage.getItem(EMAIL_KEY)
+      if (!email) {
+        setError('something went wrong')
+      }
+      signInWithEmailLink(auth, email, window.location.href)
+        .then((result) => {
+          console.log('signing in:')
+          console.log(result)
+          window.location.href = '/'
+        })
+        .catch((error) => {
+          console.log(error)
+        });
+        await AsyncStorage.removeItem(EMAIL_KEY)
+    }
   };
 
   useEffect(() => {
-    // signIn();
-    getCurrentBoardName();
+    loadPage();
   }, []);
 
   useEffect(() => {
@@ -182,7 +209,7 @@ export default function Home() {
             <ScrollView>
               <View style={styles.topBar}>
                 <Text style={AppStyles.subHeading}>show only low stock items</Text>
-                <TouchableOpacity onPress={reset}>
+                <TouchableOpacity onPress={resetBoard}>
                   <Text style={AppStyles.subHeading}>switch board</Text>
                 </TouchableOpacity>
               </View>
@@ -216,8 +243,8 @@ export default function Home() {
               )}
             </ScrollView>
           )}
-          {false && !board && !loading && <BoardForm onLoadBoard={loadBoard} onCreateBoard={loadBoard} />}
-          {!loading && <SignInForm onSignIn={signIn} />}
+          {!loading && !board && <BoardForm onLoadBoard={loadBoard} />}
+          {!loading && !email && <SignInForm onSignIn={signIn} />}
         </KeyboardAwareScrollView>
       </HideKeyboard>
     </View>

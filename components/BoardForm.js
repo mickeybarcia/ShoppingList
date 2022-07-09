@@ -26,7 +26,6 @@ const BoardForm = ({ onLoadBoard }) => {
 };
 
 BoardForm.propTypes = {
-  onCreateBoard: PropTypes.func.isRequired,
   onLoadBoard: PropTypes.func.isRequired
 };
 

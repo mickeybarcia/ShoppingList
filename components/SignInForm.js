@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { AppStyles, WHITE_COLOR } from '../AppStyles';
 
 const SignInForm = ({ onSignIn }) => {
-  const [email, setEmail] = useState();
+  const [email, setEmail] = useState('mickeydbarcia@gmail.com');
 
   return (
     <View>
