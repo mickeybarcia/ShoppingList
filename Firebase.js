@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase } from 'firebase/database';
+import { getDatabase, onValue, push, ref, set } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDhW83x6Ly2G1pAeUbZXMb4wCSWXSCJGiQ',
@@ -15,4 +15,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export default db;
+const actionCodeSettings = {
+  url: window.location.href,
+  handleCodeInApp: true
+  // iOS: {
+  //   bundleId: 'com.example.ios'
+  // },
+  // android: {
+  //   packageName: 'com.example.android',
+  //   installApp: true,
+  //   minimumVersion: '12'
+  // },
+  // dynamicLinkDomain: 'example.page.link'
+};
+
+export { actionCodeSettings, db };

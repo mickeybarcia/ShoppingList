@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput } from 'react-native';
 import PropTypes from 'prop-types';
+
+import Button from './Button';
 import { AppStyles, WHITE_COLOR } from '../AppStyles';
 
 const SignInForm = ({ onSignIn }) => {
@@ -18,15 +20,17 @@ const SignInForm = ({ onSignIn }) => {
           returnKeyType="done"
         />
       </View>
-      <TouchableOpacity onPress={() => onSignIn(email)} disabled={email === ''}>
-        <Text style={AppStyles.subHeading}>sign in / sign up</Text>
-      </TouchableOpacity>
+      <Button
+        onPress={() => onSignIn(email)}
+        text={'sign in / sign up'}
+        disabled={email === ''}
+      />
     </View>
   );
 };
 
 SignInForm.propTypes = {
-    onSignIn: PropTypes.func.isRequired,
+  onSignIn: PropTypes.func.isRequired
 };
 
 export default SignInForm;

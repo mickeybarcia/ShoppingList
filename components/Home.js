@@ -1,252 +1,199 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  View,
-  Switch,
-  Text,
-  TouchableOpacity
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { ref, onValue, set } from 'firebase/database';
-import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
+import { onValue, push, set } from 'firebase/database';
+import {
+  getAuth,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  signOut
+} from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import ListComponent from './List';
-import InputField from './InputField';
+import Board from './Board';
 import BoardForm from './BoardForm';
-import HideKeyboard from './HideKeyboard';
-import db from '../FirebaseDb';
-import { AppStyles } from '../AppStyles';
+import ShareBoardForm from './ShareBoardForm';
 import SignInForm from './SignInForm';
+import HideKeyboard from './HideKeyboard';
+import Button from './Button';
+import { AppStyles, WHITE_COLOR } from '../AppStyles';
+import { actionCodeSettings, db} from '../Firebase';
 
-const Item = (name, isLow = false) => {
-  return { name, isLow };
-};
-
-const List = (name, items = []) => {
-  return { name, items };
-};
-
-const BOARD_NAME_KEY = 'board';
-const EMAIL_KEY = 'board';
-
-const actionCodeSettings = {
-  // URL you want to redirect back to. The domain (www.example.com) for this
-  // URL must be in the authorized domains list in the Firebase Console.
-  url: 'http://localhost:19006/',
-  // This must be true.
-  handleCodeInApp: true,
-  // iOS: {
-  //   bundleId: 'com.example.ios'
-  // },
-  // android: {
-  //   packageName: 'com.example.android',
-  //   installApp: true,
-  //   minimumVersion: '12'
-  // },
-  // dynamicLinkDomain: 'example.page.link'
-};
+const BOARD_KEY = 'board';
+const EMAIL_KEY = 'emailForSignIn';
 
 export default function Home() {
   const keyboardScrollView = useRef();
-  const [email, setEmail] = useState();
-  const [board, setBoard] = useState();
-  const [lists, setLists] = useState();
+  const [user, setUser] = useState();
+  const [boardId, setBoardId] = useState();
+  const [boardName, setBoardName] = useState()
+  const [lists, setLists] = useState()
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [showLowOnly, setShowLowOnly] = useState(false);
-
-  const resetBoard = () => {
-    setBoard(null);
-    setLists(null);
-    setError('');
-    setShowLowOnly(false);
-    setLoading(false);
-  };
-
-  const getRef = (boardName) => ref(db, `boards/${boardName}`);
-
-  const loadBoard = async (boardName) => {
-    const boardRef = getRef(boardName);
-    onValue(
-      boardRef,
-      (snapshot) => {
-        setError('');
-        setLoading(false);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          setLists(JSON.parse(data));
-          if (!board) setBoard(boardName);
-        } else {
-          set(boardRef, JSON.stringify([]));
-        }
-      },
-      (error) => {
-        console.log(error);
-        setError('unable to load board');
-      }
-    );
-  };
-
-  const storeLists = () => {
-    const boardRef = getRef(board);
-    return set(boardRef, JSON.stringify(lists));
-  };
-
-  const signIn = async (email) => {
-    const auth = getAuth();
-    try {
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
-      setError('');
-      await AsyncStorage.setItem(EMAIL_KEY, email)
-    } catch (error) {
-      console.log(error);
-      setError('something went wrong');
-    }
-    setError('email sent')
-  };
-
-  const storeCurrentBoardName = async (boardName) => {
-    await AsyncStorage.setItem(BOARD_NAME_KEY, boardName);
-  };
-
-  const loadCurrentBoard = async () => {
-    const currentBoard = await AsyncStorage.getItem(BOARD_NAME_KEY);
-    if (currentBoard) {
-      loadBoard(currentBoard);
-    } else {
-      setLoading(false)
-    }
-  }
-
-  const loadPage = async () => {
-    const auth = getAuth();
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        console.log('user logged in')
-        setEmail(user.email)
-        loadCurrentBoard()
-      }
-    });
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = await AsyncStorage.getItem(EMAIL_KEY)
-      if (!email) {
-        setError('something went wrong')
-      }
-      signInWithEmailLink(auth, email, window.location.href)
-        .then((result) => {
-          console.log('signing in:')
-          console.log(result)
-          window.location.href = '/'
-        })
-        .catch((error) => {
-          console.log(error)
-        });
-        await AsyncStorage.removeItem(EMAIL_KEY)
-    }
-  };
 
   useEffect(() => {
     loadPage();
   }, []);
 
   useEffect(() => {
-    if (board) storeCurrentBoardName(board);
-  }, [board]);
-
-  useEffect(() => {
-    if (board && lists) {
-      storeLists();
+    if (boardId && lists) {
+      loadBoard()
       keyboardScrollView.current.update();
     }
   }, [lists]);
 
-  const addList = (listName) => {
-    if (listName == '') return;
-    const newLists = [...lists];
-    newLists.push(List(listName));
-    setLists(newLists);
+  useEffect(() => {
+    if (user) loadCurrentBoard();
+  }, [user]);
+
+  const loadBoard = async (boardName) => {
+    const listsRef = getListsRef(boardName, user.uid);
+    onValue(
+      listsRef,
+      (snapshot) => {
+        handleSuccess();
+        if (snapshot.exists()) {
+          const { name, } = snapshot.val();
+          if (!boardName) setBoardName()
+        } else {
+          set(listsRef, JSON.stringify([]));
+          setNewBoardUsers(boardName, user.uid, user.email);
+        }
+      },
+      (error) => handleError(error)
+    );
   };
 
-  const addItem = (listIndex, itemName) => {
-    if (itemName == '') return;
-    const newLists = [...lists];
-    newLists[listIndex].items = [...newLists[listIndex].items, Item(itemName)];
-    setLists(newLists);
+  const createBoard = async (name) => {
+    // create new board
+    const boardsRef = ref(db, 'boards')
+    const { id } = boardsRef.push({ name })
+    // add user to board
+    const boardUserRef = ref(db, `boards/${id}/users/${user.uid}`)
+    set(boardUserRef, true)
+    // add board to user
+    const userBoardsRef = ref(db, `users/${user.uid}/boards`)
+    push(userBoardsRef, id)
+    //
+    await AsyncStorage.setItem(BOARD_KEY, id);
+    setLists(JSON.stringify([]))
+  }
+
+  const loadCurrentBoard = async () => {
+    const currentBoardId = await AsyncStorage.getItem(BOARD_KEY);
+    if (currentBoardId) {
+      setBoardId(currentBoardId)
+    } else {
+      handleSuccess();
+    }
   };
 
-  const deleteItem = (listIndex, itemIndex) => {
-    const newLists = [...lists];
-    newLists[listIndex].items = newLists[listIndex].items.filter((_, index) => index != itemIndex);
-    setLists(newLists);
+  const loadPage = async () => {
+    // WEB ONLY
+    const auth = getAuth();
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = await AsyncStorage.getItem(EMAIL_KEY);
+      if (!email) return handleError(Error('email mismatch'));
+      await AsyncStorage.removeItem(EMAIL_KEY);
+      signInWithEmailLink(auth, email, window.location.href)
+        .then((result) => {
+          window.location.href = '/';
+        })
+        .catch((error) => handleError(error));
+    } else {
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          setUser(user);
+        } else {
+          handleSuccess();
+        }
+      });
+    }
   };
 
-  const switchItemStatus = (listIndex, itemIndex) => {
-    const newLists = [...lists];
-    newLists[listIndex].items[itemIndex].isLow = !newLists[listIndex].items[itemIndex].isLow;
-    setLists(newLists);
+  const signIn = async (email) => {
+    const auth = getAuth();
+    try {
+      await AsyncStorage.setItem(EMAIL_KEY, email);
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      setError('email sent');
+    } catch (error) {
+      handleError(error);
+    }
   };
 
-  const deleteList = (listIndex) => {
-    const newLists = lists.filter((_, index) => index != listIndex);
-    setLists(newLists);
+  const logout = async () => {
+    setLoading(true);
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        resetBoard();
+        setUser(null);
+      })
+      .catch((error) => handleError(error));
+  };
+
+  const resetBoard = async () => {
+    setBoard(null);
+    setLists(null);
+    setError('');
+    setShowLowOnly(false);
+    setLoading(false);
+    await AsyncStorage.removeItem(BOARD_KEY);
+  };
+
+  const shareBoard = async () => {};
+
+  const handleError = (error, message = 'something went wrong') => {
+    console.log(error);
+    setLoading(false);
+    setError(message);
+  };
+
+  const handleSuccess = () => {
+    setError('');
+    setLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>{board || 'shopping list app'}</Text>
-      {loading && <ActivityIndicator animating={loading} />}
-      <HideKeyboard>
-        <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
-          {error !== '' && (
-            <View style={styles.error}>
-              <Text style={AppStyles.subHeading}>{error}</Text>
-            </View>
-          )}
-          {board && lists && !loading && (
-            <ScrollView>
-              <View style={styles.topBar}>
-                <Text style={AppStyles.subHeading}>show only low stock items</Text>
-                <TouchableOpacity onPress={resetBoard}>
-                  <Text style={AppStyles.subHeading}>switch board</Text>
-                </TouchableOpacity>
+    <View style={styles.background}>
+      <View style={styles.container}>
+        <View style={styles.topBar}>
+          <Text style={styles.heading}>{boardName || 'shopping list app'}</Text>
+          <View>
+            {user && <Button onPress={logout} text={'log out'}/>}
+            {board && (
+              <View>
+                <Button onPress={resetBoard} text={'switch board'}/>
+                <Button onPress={resetBoard} text={'share board'}/>
               </View>
-              <Switch
-                style={styles.switch}
-                onValueChange={() => setShowLowOnly(!showLowOnly)}
-                value={showLowOnly}
+            )}
+          </View>
+        </View>
+        {error !== '' && (
+          <View style={styles.error}>
+            <Text style={AppStyles.subHeading}>{error}</Text>
+          </View>
+        )}
+        {loading && <ActivityIndicator animating={loading} />}
+        <HideKeyboard>
+          <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
+            {lists && (
+              <Board
+                lists={lists}
+                showLowOnly={showLowOnly}
+                onSwitchLowOnly={() => setShowLowOnly(!showLowOnly)}
+                onUpdateLists={setLists}
               />
-              {lists.map(({ name, items }, index) => {
-                const filteredItems = items.filter(
-                  (item) => !showLowOnly || (showLowOnly && item.isLow)
-                );
-                if (filteredItems.length == 0 && showLowOnly) return;
-                return (
-                  <View key={index}>
-                    <ListComponent
-                      index={index}
-                      name={name}
-                      items={filteredItems}
-                      showLowOnly={showLowOnly}
-                      onDeleteList={() => deleteList(index)}
-                      onAddItem={(itemName) => addItem(index, itemName)}
-                      onDeleteItem={(itemIndex) => deleteItem(index, itemIndex)}
-                      onSwitchItemStatus={(itemIndex) => switchItemStatus(index, itemIndex)}
-                    />
-                  </View>
-                );
-              })}
-              {!showLowOnly && (
-                <InputField onAddItem={(listName) => addList(listName)} placeholder={'new list'} />
-              )}
-            </ScrollView>
-          )}
-          {!loading && !board && <BoardForm onLoadBoard={loadBoard} />}
-          {!loading && !email && <SignInForm onSignIn={signIn} />}
-        </KeyboardAwareScrollView>
-      </HideKeyboard>
+            )}
+            {!loading && user && !board && <BoardForm onCreateBoard={createBoard} />}
+            {!loading && !user && <SignInForm onSignIn={signIn} />}
+            {false && <ShareBoardForm onSignIn={signIn} />}
+          </KeyboardAwareScrollView>
+        </HideKeyboard>
+      </View>
     </View>
   );
 }
@@ -255,24 +202,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#1E1A3C',
-    paddingBottom: 100
+    paddingBottom: 100,
+    maxWidth: 400
+  },
+  background: {
+    backgroundColor: '#1E1A3C'
   },
   topBar: {
+    textAlign: 'right',
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    maxWidth: 400
+    marginBottom: 30
   },
   heading: {
-    color: '#fff',
+    color: WHITE_COLOR,
     fontSize: 30,
     fontWeight: '600',
-    paddingBottom: 20,
-    paddingTop: 40
-  },
-  switch: {
-    margin: 10
+    paddingBottom: 15
   },
   error: {
     margin: 10

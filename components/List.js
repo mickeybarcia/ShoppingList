@@ -16,6 +16,8 @@ const List = ({
   onSwitchItemStatus,
   showLowOnly
 }) => {
+  const filteredItems = items.filter((item) => !showLowOnly || (showLowOnly && item.isLow));
+  if (filteredItems.length == 0 && showLowOnly) return null;
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -29,10 +31,11 @@ const List = ({
         </View>
         {items.map((item, index) => {
           return (
-            <View key={index} style={styles.itemContainer}>
+            <View key={index}>
               <ListItem
                 index={index}
                 item={item}
+                showLowOnly={showLowOnly}
                 onDeleteItem={() => onDeleteItem(index)}
                 onSwitchItemStatus={() => onSwitchItemStatus(index)}
               />
@@ -60,7 +63,7 @@ List.propTypes = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 20,
+    margin: 15,
     maxWidth: 350
   },
   titleContainer: {
@@ -72,9 +75,6 @@ const styles = StyleSheet.create({
     color: WHITE_COLOR,
     fontSize: 20,
     fontWeight: '500'
-  },
-  itemContainer: {
-    marginTop: 10
   },
   delete: {
     marginLeft: 10

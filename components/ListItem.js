@@ -4,22 +4,25 @@ import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 import { LIGHT_BACKGROUND_COLOR, WHITE_COLOR } from '../AppStyles';
 
-const ListItem = ({ item, onSwitchItemStatus, onDeleteItem }) => {
+const ListItem = ({ item, onSwitchItemStatus, onDeleteItem, showLowOnly }) => {
+  const show = !showLowOnly || (showLowOnly && item.isLow);
   return (
-    <View style={styles.container}>
-      <View style={styles.indexContainer}>
-        <TouchableOpacity onPress={onSwitchItemStatus}>
-          {item.isLow && <MaterialIcons name="warning" size={18} color="#fff" />}
-          {!item.isLow && <MaterialIcons name="check" size={18} color="#fff" />}
-        </TouchableOpacity>
+    show && (
+      <View style={styles.container}>
+        <View style={styles.indexContainer}>
+          <TouchableOpacity onPress={onSwitchItemStatus}>
+            {item.isLow && <MaterialIcons name="warning" size={18} color="#fff" />}
+            {!item.isLow && <MaterialIcons name="check" size={18} color="#fff" />}
+          </TouchableOpacity>
+        </View>
+        <View style={styles.itemContainer}>
+          <Text style={styles.item}>{item.name}</Text>
+          <TouchableOpacity onPress={onDeleteItem}>
+            <MaterialIcons style={styles.delete} name="delete" size={18} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.itemContainer}>
-        <Text style={styles.item}>{item.name}</Text>
-        <TouchableOpacity onPress={onDeleteItem}>
-          <MaterialIcons style={styles.delete} name="delete" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </View>
+    )
   );
 };
 
@@ -28,12 +31,17 @@ export default ListItem;
 ListItem.propTypes = {
   item: PropTypes.object.isRequired,
   onSwitchItemStatus: PropTypes.func.isRequired,
-  onDeleteItem: PropTypes.func.isRequired
+  onDeleteItem: PropTypes.func.isRequired,
+  showLowOnly: PropTypes.bool
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    flex: 1,
+    backgroundColor: '#1E1A3C',
+    marginTop: 10,
+    maxWidth: 350
   },
   indexContainer: {
     backgroundColor: LIGHT_BACKGROUND_COLOR,

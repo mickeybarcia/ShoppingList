@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput } from 'react-native';
 import PropTypes from 'prop-types';
+
 import { WHITE_COLOR, AppStyles } from '../AppStyles';
+import Button from './Button';
 
 const BoardForm = ({ onLoadBoard }) => {
   const [boardName, setBoardName] = useState();
+  const [boards, setBoards] = useState([])
+
+  // const loadBoards = async () => {
+
+  // }
+
+  // useEffect(() => {
+  //   loadBoards();
+  // }, []);
 
   return (
     <View>
@@ -18,9 +29,23 @@ const BoardForm = ({ onLoadBoard }) => {
           returnKeyType="done"
         />
       </View>
-      <TouchableOpacity onPress={() => onLoadBoard(boardName)} disabled={boardName === ''}>
-        <Text style={AppStyles.subHeading}>load board</Text>
-      </TouchableOpacity>
+      <Button
+        onPress={() => onLoadBoard(boardName)}
+        text={'create new board'}
+        disabled={boardName === ''}
+      />
+      {
+        boards.map((boardName, index) => {
+          return (
+            <View key={index}>
+              <Button
+                onPress={() => onLoadBoard(boardName)}
+                text={boardName}
+              />
+            </View>
+          )
+        })
+      }
     </View>
   );
 };
