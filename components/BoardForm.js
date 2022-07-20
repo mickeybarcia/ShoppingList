@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
-import { View, TextInput } from 'react-native';
+import { View, TextInput, Text } from 'react-native';
 import PropTypes from 'prop-types';
 
 import { WHITE_COLOR, AppStyles } from '../AppStyles';
 import Button from './Button';
 
-const BoardForm = ({ onLoadBoard }) => {
+const BoardForm = ({ onCreateBoard, onLoadBoard, boards }) => {
   const [boardName, setBoardName] = useState();
-  const [boards, setBoards] = useState([])
-
-  // const loadBoards = async () => {
-
-  // }
-
-  // useEffect(() => {
-  //   loadBoards();
-  // }, []);
 
   return (
     <View>
@@ -30,28 +21,30 @@ const BoardForm = ({ onLoadBoard }) => {
         />
       </View>
       <Button
-        onPress={() => onLoadBoard(boardName)}
+        onPress={() => onCreateBoard(boardName)}
         text={'create new board'}
         disabled={boardName === ''}
       />
-      {
-        boards.map((boardName, index) => {
-          return (
-            <View key={index}>
-              <Button
-                onPress={() => onLoadBoard(boardName)}
-                text={boardName}
-              />
-            </View>
-          )
-        })
-      }
+      {boards && (
+        <View style={{ marginTop: 30 }}>
+          <Text style={AppStyles.title}>select from my boards</Text>
+          {Object.entries(boards).map(([key, val], index) => {
+            return (
+              <View key={index}>
+                <Button onPress={() => onLoadBoard(key)} text={val} />
+              </View>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 };
 
 BoardForm.propTypes = {
-  onLoadBoard: PropTypes.func.isRequired
+  onCreateBoard: PropTypes.func.isRequired,
+  onLoadBoard: PropTypes.func.isRequired,
+  boards: PropTypes.object
 };
 
 export default BoardForm;

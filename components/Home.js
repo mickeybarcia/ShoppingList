@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { onValue, push, set } from 'firebase/database';
+import { onValue } from 'firebase/database';
 import {
   getAuth,
   sendSignInLinkToEmail,
@@ -17,49 +17,73 @@ import ShareBoardForm from './ShareBoardForm';
 import SignInForm from './SignInForm';
 import HideKeyboard from './HideKeyboard';
 import Button from './Button';
-import { AppStyles, WHITE_COLOR } from '../AppStyles';
-import { actionCodeSettings, db} from '../Firebase';
+import { AppStyles } from '../AppStyles';
+import {
+  actionCodeSettings,
+  updateListsRef,
+  getBoardsRef,
+  getBoardRef,
+  saveNewBoard,
+  addBoardToUser
+} from '../Firebase';
 
-const BOARD_KEY = 'board';
+const BOARD_KEY = 'boardId';
 const EMAIL_KEY = 'emailForSignIn';
 
 export default function Home() {
   const keyboardScrollView = useRef();
   const [user, setUser] = useState();
+  const [boards, setBoards] = useState();
   const [boardId, setBoardId] = useState();
-  const [boardName, setBoardName] = useState()
-  const [lists, setLists] = useState()
+  const [boardName, setBoardName] = useState();
+  const [lists, setLists] = useState();
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showLowOnly, setShowLowOnly] = useState(false);
+  const [showShareBoard, setShowShareBoard] = useState(false);
 
   useEffect(() => {
     loadPage();
   }, []);
 
   useEffect(() => {
-    if (boardId && lists) {
-      loadBoard()
-      keyboardScrollView.current.update();
+    if (boardId) {
+      AsyncStorage.setItem(BOARD_KEY, boardId);
+      loadBoard();
     }
-  }, [lists]);
+  }, [boardId]);
 
   useEffect(() => {
-    if (user) loadCurrentBoard();
+    if (user) {
+      loadCurrentBoard();
+      loadBoards();
+    }
   }, [user]);
 
-  const loadBoard = async (boardName) => {
-    const listsRef = getListsRef(boardName, user.uid);
+  const updateLists = async (newLists) => {
+    updateListsRef(boardId, newLists);
+    keyboardScrollView.current.update();
+  };
+
+  const loadBoards = async () => {
+    const boardsRef = getBoardsRef(user.email);
     onValue(
-      listsRef,
+      boardsRef,
+      (snapshot) => snapshot.exists() && setBoards(snapshot.val()),
+      (error) => error.code !== 'PERMISSION_DENIED' && handleError(error)
+    );
+  };
+
+  const loadBoard = async () => {
+    const boardRef = getBoardRef(boardId);
+    onValue(
+      boardRef,
       (snapshot) => {
         handleSuccess();
         if (snapshot.exists()) {
-          const { name, } = snapshot.val();
-          if (!boardName) setBoardName()
-        } else {
-          set(listsRef, JSON.stringify([]));
-          setNewBoardUsers(boardName, user.uid, user.email);
+          const { name, lists: newLists } = snapshot.val();
+          if (!boardName) setBoardName(name);
+          setLists(JSON.parse(newLists));
         }
       },
       (error) => handleError(error)
@@ -67,24 +91,14 @@ export default function Home() {
   };
 
   const createBoard = async (name) => {
-    // create new board
-    const boardsRef = ref(db, 'boards')
-    const { id } = boardsRef.push({ name })
-    // add user to board
-    const boardUserRef = ref(db, `boards/${id}/users/${user.uid}`)
-    set(boardUserRef, true)
-    // add board to user
-    const userBoardsRef = ref(db, `users/${user.uid}/boards`)
-    push(userBoardsRef, id)
-    //
-    await AsyncStorage.setItem(BOARD_KEY, id);
-    setLists(JSON.stringify([]))
-  }
+    const id = await saveNewBoard(name, user.email);
+    setBoardId(id);
+  };
 
   const loadCurrentBoard = async () => {
-    const currentBoardId = await AsyncStorage.getItem(BOARD_KEY);
+    let currentBoardId = await AsyncStorage.getItem(BOARD_KEY);
     if (currentBoardId) {
-      setBoardId(currentBoardId)
+      setBoardId(currentBoardId);
     } else {
       handleSuccess();
     }
@@ -114,6 +128,7 @@ export default function Home() {
   };
 
   const signIn = async (email) => {
+    resetBoard();
     const auth = getAuth();
     try {
       await AsyncStorage.setItem(EMAIL_KEY, email);
@@ -127,24 +142,31 @@ export default function Home() {
   const logout = async () => {
     setLoading(true);
     const auth = getAuth();
-    signOut(auth)
-      .then(() => {
-        resetBoard();
-        setUser(null);
-      })
-      .catch((error) => handleError(error));
+    await signOut(auth);
+    setUser(null);
+    resetBoard();
+  };
+
+  const shareBoard = async (email) => {
+    addBoardToUser(email, boardId, boardName);
+    setError('user added');
+  };
+
+  const toggleShareBoard = () => {
+    setShowShareBoard(!showShareBoard);
+    setError('');
   };
 
   const resetBoard = async () => {
-    setBoard(null);
+    await AsyncStorage.removeItem(BOARD_KEY);
+    setBoardId(null);
+    setBoardName(null);
     setLists(null);
     setError('');
     setShowLowOnly(false);
     setLoading(false);
-    await AsyncStorage.removeItem(BOARD_KEY);
+    setShowShareBoard(false);
   };
-
-  const shareBoard = async () => {};
 
   const handleError = (error, message = 'something went wrong') => {
     console.log(error);
@@ -161,13 +183,16 @@ export default function Home() {
     <View style={styles.background}>
       <View style={styles.container}>
         <View style={styles.topBar}>
-          <Text style={styles.heading}>{boardName || 'shopping list app'}</Text>
+          <Text style={AppStyles.title}>{boardName || 'shopping list app'}</Text>
           <View>
-            {user && <Button onPress={logout} text={'log out'}/>}
-            {board && (
+            {user && <Button onPress={logout} text={'log out'} />}
+            {boardId && (
               <View>
-                <Button onPress={resetBoard} text={'switch board'}/>
-                <Button onPress={resetBoard} text={'share board'}/>
+                <Button onPress={resetBoard} text={'switch board'} />
+                <Button
+                  onPress={toggleShareBoard}
+                  text={showShareBoard ? 'done sharing' : 'share board'}
+                />
               </View>
             )}
           </View>
@@ -180,17 +205,19 @@ export default function Home() {
         {loading && <ActivityIndicator animating={loading} />}
         <HideKeyboard>
           <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
-            {lists && (
+            {lists && !showShareBoard && (
               <Board
                 lists={lists}
                 showLowOnly={showLowOnly}
                 onSwitchLowOnly={() => setShowLowOnly(!showLowOnly)}
-                onUpdateLists={setLists}
+                onUpdateLists={updateLists}
               />
             )}
-            {!loading && user && !board && <BoardForm onCreateBoard={createBoard} />}
+            {!loading && user && !boardId && (
+              <BoardForm onCreateBoard={createBoard} onLoadBoard={setBoardId} boards={boards} />
+            )}
             {!loading && !user && <SignInForm onSignIn={signIn} />}
-            {false && <ShareBoardForm onSignIn={signIn} />}
+            {showShareBoard && <ShareBoardForm onShareBoard={shareBoard} />}
           </KeyboardAwareScrollView>
         </HideKeyboard>
       </View>
@@ -215,14 +242,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 30
   },
-  heading: {
-    color: WHITE_COLOR,
-    fontSize: 30,
-    fontWeight: '600',
-    paddingBottom: 15
-  },
   error: {
-    margin: 10
+    marginBottom: 10
   }
 });
 

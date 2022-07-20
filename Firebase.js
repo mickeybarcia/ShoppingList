@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, onValue, push, ref, set } from 'firebase/database';
+import { getDatabase, push, ref, set } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDhW83x6Ly2G1pAeUbZXMb4wCSWXSCJGiQ',
@@ -29,4 +29,33 @@ const actionCodeSettings = {
   // dynamicLinkDomain: 'example.page.link'
 };
 
-export { actionCodeSettings, db };
+const updateListsRef = async (boardId, newLists) => {
+  const listsRef = ref(db, `boards/${boardId}/lists`);
+  set(listsRef, JSON.stringify(newLists));
+};
+
+const getBoardsRef = (email) => ref(db, `users/${email.replace('.', '%2e')}/boards`);
+
+const getBoardRef = (boardId) => ref(db, `boards/${boardId}`);
+
+const saveNewBoard = async (name, email) => {
+  const newBoardsRef = push(ref(db, 'boards'));
+  const id = newBoardsRef.key;
+  await set(newBoardsRef, { name, lists: JSON.stringify([]) });
+  await addBoardToUser(email, id, name);
+  return id;
+};
+
+const addBoardToUser = async (email, boardId, boardName) => {
+  await set(ref(db, `boards/${boardId}/users/${email.replace('.', '%2e')}`), true);
+  await set(ref(db, `users/${email.replace('.', '%2e')}/boards/${boardId}`), boardName);
+};
+
+export {
+  actionCodeSettings,
+  updateListsRef,
+  getBoardsRef,
+  getBoardRef,
+  saveNewBoard,
+  addBoardToUser
+};

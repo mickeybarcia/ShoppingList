@@ -20,11 +20,7 @@ const SignInForm = ({ onSignIn }) => {
           returnKeyType="done"
         />
       </View>
-      <Button
-        onPress={() => onSignIn(email)}
-        text={'sign in / sign up'}
-        disabled={email === ''}
-      />
+      <Button onPress={() => onSignIn(email)} text={'sign in / sign up'} disabled={email === ''} />
     </View>
   );
 };

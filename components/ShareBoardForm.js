@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput } from 'react-native';
 import PropTypes from 'prop-types';
+
 import { WHITE_COLOR, AppStyles } from '../AppStyles';
+import Button from './Button';
 
-const ShareBoardForm = ({ onLoadBoard }) => {
-  const [boardName, setBoardName] = useState();
-
+const ShareBoardForm = ({ onShareBoard }) => {
+  const [email, setEmail] = useState('');
   return (
     <View>
       <View style={AppStyles.inputContainer}>
         <TextInput
           style={AppStyles.inputField}
-          value={boardName}
-          onChangeText={(text) => setBoardName(text)}
-          placeholder={'board name'}
+          value={email}
+          onChangeText={(text) => setEmail(text)}
+          placeholder={'email'}
           placeholderTextColor={WHITE_COLOR}
           returnKeyType="done"
         />
       </View>
-      <TouchableOpacity onPress={() => onLoadBoard(boardName)} disabled={boardName === ''}>
-        <Text style={AppStyles.subHeading}>load board</Text>
-      </TouchableOpacity>
+      <Button
+        onPress={() => onShareBoard(email)}
+        text={'add email to board'}
+        disabled={email === ''}
+      />
     </View>
   );
 };
 
 ShareBoardForm.propTypes = {
-  onLoadBoard: PropTypes.func.isRequired
+  onShareBoard: PropTypes.func.isRequired
 };
 
 export default ShareBoardForm;

@@ -17,12 +17,19 @@ const AppStyles = StyleSheet.create({
     padding: 10,
     height: 40,
     maxWidth: 400,
-    marginBottom: 20
+    marginBottom: 20,
+    marginTop: 5
   },
   subHeading: {
     color: WHITE_COLOR,
     fontSize: 15,
     fontWeight: '400'
+  },
+  title: {
+    color: WHITE_COLOR,
+    fontSize: 30,
+    fontWeight: '600',
+    paddingBottom: 15
   }
 });
 
