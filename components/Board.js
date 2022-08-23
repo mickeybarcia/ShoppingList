@@ -3,7 +3,7 @@ import { ScrollView, View, Text, Switch, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 
 import ListComponent from './List';
-import InputField from './InputField';
+import InputField from './shared/InputField';
 import { AppStyles } from '../AppStyles';
 
 const Item = (name, isLow = false) => {
@@ -46,6 +46,37 @@ const Board = ({ lists, showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
     onUpdateLists(newLists);
   };
 
+  const renameList = (listIndex, newName) => {
+    const newLists = [...lists];
+    newLists[listIndex].name = newName;
+    onUpdateLists(newLists);
+  };
+
+  const moveListUp = (listIndex) => {
+    if (listIndex === 0) {
+      const newLists = [...lists].slice(1, lists.length).concat(lists[0]);
+      onUpdateLists(newLists);
+    } else {
+      const newLists = [...lists]
+        .slice(0, listIndex - 1)
+        .concat(lists[listIndex])
+        .concat([...lists][listIndex - 1])
+        .concat(lists.slice(listIndex + 1, lists.length));
+      onUpdateLists(newLists);
+    }
+  };
+
+  const moveListDown = (listIndex) => {
+    if (listIndex === lists.length - 1) {
+      const newLists = lists
+        .slice(lists.length - 1, lists.length)
+        .concat(lists.slice(0, lists.length - 1));
+      onUpdateLists(newLists);
+    } else {
+      moveListUp(listIndex + 1);
+    }
+  };
+
   return (
     <View>
       <ScrollView>
@@ -65,6 +96,9 @@ const Board = ({ lists, showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
                 onAddItem={(itemName) => addItem(index, itemName)}
                 onDeleteItem={(itemIndex) => deleteItem(index, itemIndex)}
                 onSwitchItemStatus={(itemIndex) => switchItemStatus(index, itemIndex)}
+                onRenameList={(name) => renameList(index, name)}
+                onMoveListUp={() => moveListUp(index)}
+                onMoveListDown={() => moveListDown(index)}
               />
             </View>
           );

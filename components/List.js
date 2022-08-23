@@ -1,11 +1,11 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 
-import ItemInputField from './InputField';
+import ItemInputField from './shared/InputField';
 import ListItem from './ListItem';
-import { WHITE_COLOR } from '../AppStyles';
+import { AppStyles, LIGHT_BACKGROUND_COLOR, WHITE_COLOR } from '../AppStyles';
 
 const List = ({
   name,
@@ -14,18 +14,62 @@ const List = ({
   onDeleteList,
   onDeleteItem,
   onSwitchItemStatus,
-  showLowOnly
+  showLowOnly,
+  onRenameList,
+  onMoveListDown,
+  onMoveListUp
 }) => {
+  const [newName, setNewListName] = useState(name);
+  const [showRenameList, setShowRenameList] = useState(false);
+
+  const renameList = (newName) => {
+    setShowRenameList(false);
+    newName !== name && onRenameList(newName);
+  };
+
   const filteredItems = items.filter((item) => !showLowOnly || (showLowOnly && item.isLow));
   if (filteredItems.length == 0 && showLowOnly) return null;
+
   return (
     <ScrollView>
       <View style={styles.container}>
         <View style={styles.titleContainer}>
-          <Text style={styles.heading}>{name}</Text>
-          {!showLowOnly && (
-            <TouchableOpacity onPress={onDeleteList}>
-              <MaterialIcons style={styles.delete} name="delete" size={18} color="#fff" />
+          {!showRenameList && (
+            <View style={styles.titleContainer}>
+              <TouchableOpacity
+                style={{ visibility: showLowOnly ? 'hidden' : 'shown' }}
+                onPress={onMoveListUp}>
+                <MaterialIcons name="arrow-upward" size={18} color={LIGHT_BACKGROUND_COLOR} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ visibility: showLowOnly ? 'hidden' : 'shown' }}
+                onPress={onMoveListDown}>
+                <MaterialIcons name="arrow-downward" size={18} color={LIGHT_BACKGROUND_COLOR} />
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => setShowRenameList(true)}>
+                <Text style={styles.heading}>{name}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {showRenameList && (
+            <TextInput
+              style={AppStyles.inputField}
+              value={newName}
+              autoFocus={true}
+              onChangeText={(text) => setNewListName(text)}
+              placeholder={'list name'}
+              placeholderTextColor={WHITE_COLOR}
+              returnKeyType="done"
+            />
+          )}
+          {!showLowOnly && !showRenameList && (
+            <TouchableOpacity onPress={() => onDeleteList()}>
+              <MaterialIcons style={AppStyles.delete} name="delete" size={18} color="white" />
+            </TouchableOpacity>
+          )}
+          {showRenameList && (
+            <TouchableOpacity onPress={() => renameList(newName)} style={{ paddingLeft: 10 }}>
+              <Text style={AppStyles.subHeading}>{'done'}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -57,6 +101,9 @@ List.propTypes = {
   onDeleteList: PropTypes.func.isRequired,
   onAddItem: PropTypes.func.isRequired,
   onDeleteItem: PropTypes.func.isRequired,
+  onRenameList: PropTypes.func.isRequired,
+  onMoveListDown: PropTypes.func.isRequired,
+  onMoveListUp: PropTypes.func.isRequired,
   onSwitchItemStatus: PropTypes.func.isRequired
 };
 
@@ -75,8 +122,5 @@ const styles = StyleSheet.create({
     color: WHITE_COLOR,
     fontSize: 20,
     fontWeight: '500'
-  },
-  delete: {
-    marginLeft: 10
   }
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, Text, Linking, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { onValue } from 'firebase/database';
 import {
@@ -10,37 +10,44 @@ import {
   signOut
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import Board from './Board';
 import BoardForm from './BoardForm';
-import ShareBoardForm from './ShareBoardForm';
-import SignInForm from './SignInForm';
-import HideKeyboard from './HideKeyboard';
-import Button from './Button';
-import { AppStyles } from '../AppStyles';
+import HideKeyboard from './shared/HideKeyboard';
+import { AppStyles, BACKGROUND_COLOR } from '../AppStyles';
 import {
   actionCodeSettings,
   updateListsRef,
   getBoardsRef,
   getBoardRef,
   saveNewBoard,
-  addBoardToUser
+  addBoardToUser,
+  deleteBoardById,
+  renameBoardById
 } from '../Firebase';
+import Menu from './Menu';
+import Form from './Form';
 
 const BOARD_KEY = 'boardId';
 const EMAIL_KEY = 'emailForSignIn';
 
 export default function Home() {
   const keyboardScrollView = useRef();
-  const [user, setUser] = useState();
-  const [boards, setBoards] = useState();
-  const [boardId, setBoardId] = useState();
-  const [boardName, setBoardName] = useState();
+
+  const [user, setUser] = useState(null);
+  const [boardIds, setBoardIds] = useState([]);
+  const [boardId, setBoardId] = useState(null);
+  const [boardName, setBoardName] = useState(null);
   const [lists, setLists] = useState();
+  const [showLowOnly, setShowLowOnly] = useState(false);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showLowOnly, setShowLowOnly] = useState(false);
+
+  const [showMenu, setShowMenu] = useState(false);
   const [showShareBoard, setShowShareBoard] = useState(false);
+  const [showRenameBoard, setShowRenameBoard] = useState(false);
 
   useEffect(() => {
     loadPage();
@@ -69,12 +76,20 @@ export default function Home() {
     const boardsRef = getBoardsRef(user.email);
     onValue(
       boardsRef,
-      (snapshot) => snapshot.exists() && setBoards(snapshot.val()),
+      async (snapshot) => {
+        if (snapshot.exists()) {
+          const boardIds = Object.entries(snapshot.val())
+            .filter(([, isActive]) => isActive)
+            .map(([id]) => id);
+          setBoardIds(boardIds);
+        }
+      },
       (error) => error.code !== 'PERMISSION_DENIED' && handleError(error)
     );
   };
 
   const loadBoard = async () => {
+    setShowMenu(false);
     const boardRef = getBoardRef(boardId);
     onValue(
       boardRef,
@@ -86,13 +101,19 @@ export default function Home() {
           setLists(JSON.parse(newLists));
         }
       },
-      (error) => handleError(error)
+      (error) => error.code !== 'PERMISSION_DENIED' && handleError(error)
     );
   };
 
   const createBoard = async (name) => {
+    setShowMenu(false);
     const id = await saveNewBoard(name, user.email);
     setBoardId(id);
+  };
+
+  const deleteBoard = async () => {
+    await deleteBoardById(boardId, user.email);
+    resetBoard();
   };
 
   const loadCurrentBoard = async () => {
@@ -107,13 +128,17 @@ export default function Home() {
   const loadPage = async () => {
     // WEB ONLY
     const auth = getAuth();
-    if (isSignInWithEmailLink(auth, window.location.href)) {
+    const url = window.location.href;
+    // const url = ''
+    // const url = await Linking.getInitialURL()
+    if (isSignInWithEmailLink(auth, url)) {
       let email = await AsyncStorage.getItem(EMAIL_KEY);
       if (!email) return handleError(Error('email mismatch'));
       await AsyncStorage.removeItem(EMAIL_KEY);
-      signInWithEmailLink(auth, email, window.location.href)
+      signInWithEmailLink(auth, email, url)
         .then((result) => {
           window.location.href = '/';
+          loadPage();
         })
         .catch((error) => handleError(error));
     } else {
@@ -148,13 +173,25 @@ export default function Home() {
   };
 
   const shareBoard = async (email) => {
-    addBoardToUser(email, boardId, boardName);
+    addBoardToUser(email, boardId);
     setError('user added');
   };
 
   const toggleShareBoard = () => {
     setShowShareBoard(!showShareBoard);
+    setShowRenameBoard(false);
     setError('');
+  };
+
+  const toggleRenameBoard = async () => {
+    setShowRenameBoard(!showRenameBoard);
+    setShowShareBoard(false);
+    setError('');
+  };
+
+  const renameBoard = async (newName) => {
+    await renameBoardById(boardId, newName);
+    setBoardName(newName);
   };
 
   const resetBoard = async () => {
@@ -166,6 +203,8 @@ export default function Home() {
     setShowLowOnly(false);
     setLoading(false);
     setShowShareBoard(false);
+    setShowMenu(false);
+    setShowRenameBoard(false);
   };
 
   const handleError = (error, message = 'something went wrong') => {
@@ -179,33 +218,50 @@ export default function Home() {
     setLoading(false);
   };
 
+  const MenuButton = () => {
+    return (
+      <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
+        <MaterialIcons name="menu" size={30} color="white" />
+      </TouchableOpacity>
+    );
+  };
+
+  const Error = () => {
+    return (
+      error !== '' && (
+        <View style={styles.error}>
+          <Text style={AppStyles.subHeading}>{error}</Text>
+        </View>
+      )
+    );
+  };
   return (
     <View style={styles.background}>
       <View style={styles.container}>
         <View style={styles.topBar}>
           <Text style={AppStyles.title}>{boardName || 'shopping list app'}</Text>
           <View>
-            {user && <Button onPress={logout} text={'log out'} />}
-            {boardId && (
-              <View>
-                <Button onPress={resetBoard} text={'switch board'} />
-                <Button
-                  onPress={toggleShareBoard}
-                  text={showShareBoard ? 'done sharing' : 'share board'}
-                />
-              </View>
-            )}
+            <MenuButton />
+            <Menu
+              showMenu={showMenu}
+              showLogout={user !== null}
+              showBoardButtons={boardId !== null}
+              logout={logout}
+              switchBoard={resetBoard}
+              toggleRenameBoard={toggleRenameBoard}
+              renameBoard={renameBoard}
+              showRenameBoard={showRenameBoard}
+              deleteBoard={deleteBoard}
+              toggleShareBoard={toggleShareBoard}
+              showShareBoard={showShareBoard}
+            />
           </View>
         </View>
-        {error !== '' && (
-          <View style={styles.error}>
-            <Text style={AppStyles.subHeading}>{error}</Text>
-          </View>
-        )}
+        <Error />
         {loading && <ActivityIndicator animating={loading} />}
         <HideKeyboard>
           <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
-            {lists && !showShareBoard && (
+            {lists && !showShareBoard && !showRenameBoard && (
               <Board
                 lists={lists}
                 showLowOnly={showLowOnly}
@@ -214,10 +270,25 @@ export default function Home() {
               />
             )}
             {!loading && user && !boardId && (
-              <BoardForm onCreateBoard={createBoard} onLoadBoard={setBoardId} boards={boards} />
+              <BoardForm onCreateBoard={createBoard} onLoadBoard={setBoardId} boardIds={boardIds} />
             )}
-            {!loading && !user && <SignInForm onSignIn={signIn} />}
-            {showShareBoard && <ShareBoardForm onShareBoard={shareBoard} />}
+            {!loading && !user && (
+              <Form
+                onComplete={signIn}
+                buttonText={'sign in / sign up'}
+                placeholder={'mickey@mickey.com'}
+              />
+            )}
+            {showShareBoard && (
+              <Form
+                onComplete={shareBoard}
+                buttonText={'add email to board'}
+                placeholder={'mickey@mickey.com'}
+              />
+            )}
+            {showRenameBoard && (
+              <Form onComplete={renameBoard} buttonText={'rename board'} initialValue={boardName} />
+            )}
           </KeyboardAwareScrollView>
         </HideKeyboard>
       </View>
@@ -227,20 +298,20 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 500,
     maxWidth: 400
   },
   background: {
-    backgroundColor: '#1E1A3C'
+    backgroundColor: BACKGROUND_COLOR
   },
   topBar: {
     textAlign: 'right',
-    flex: 1,
+    // flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 30
+    marginBottom: 10
   },
   error: {
     marginBottom: 10

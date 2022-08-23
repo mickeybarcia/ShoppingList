@@ -1,39 +1,20 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text } from 'react-native';
+import React from 'react';
+import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
 
-import { WHITE_COLOR, AppStyles } from '../AppStyles';
-import Button from './Button';
+import { AppStyles } from '../AppStyles';
+import BoardName from './BoardName';
+import Form from './Form';
 
-const BoardForm = ({ onCreateBoard, onLoadBoard, boards }) => {
-  const [boardName, setBoardName] = useState();
-
+const BoardForm = ({ onCreateBoard, onLoadBoard, boardIds }) => {
   return (
     <View>
-      <View style={AppStyles.inputContainer}>
-        <TextInput
-          style={AppStyles.inputField}
-          value={boardName}
-          onChangeText={(text) => setBoardName(text)}
-          placeholder={'board name'}
-          placeholderTextColor={WHITE_COLOR}
-          returnKeyType="done"
-        />
-      </View>
-      <Button
-        onPress={() => onCreateBoard(boardName)}
-        text={'create new board'}
-        disabled={boardName === ''}
-      />
-      {boards && (
+      <Form onComplete={onCreateBoard} buttonText={'create new board'} placeholder={'new board'} />
+      {boardIds && (
         <View style={{ marginTop: 30 }}>
           <Text style={AppStyles.title}>select from my boards</Text>
-          {Object.entries(boards).map(([key, val], index) => {
-            return (
-              <View key={index}>
-                <Button onPress={() => onLoadBoard(key)} text={val} />
-              </View>
-            );
+          {boardIds.map((id, index) => {
+            return <BoardName key={index} onLoadBoard={onLoadBoard} id={id} />;
           })}
         </View>
       )}
@@ -44,7 +25,7 @@ const BoardForm = ({ onCreateBoard, onLoadBoard, boards }) => {
 BoardForm.propTypes = {
   onCreateBoard: PropTypes.func.isRequired,
   onLoadBoard: PropTypes.func.isRequired,
-  boards: PropTypes.object
+  boardIds: PropTypes.array.isRequired
 };
 
 export default BoardForm;

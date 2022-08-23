@@ -16,17 +16,17 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const actionCodeSettings = {
-  url: window.location.href,
-  handleCodeInApp: true
-  // iOS: {
-  //   bundleId: 'com.example.ios'
-  // },
+  url: 'http://localhost:19006/', //https://shopping-list-tracker.herokuapp.com/
+  handleCodeInApp: true,
+  iOS: {
+    bundleId: 'com.mickey.shoppinglisttracker'
+  },
   // android: {
   //   packageName: 'com.example.android',
   //   installApp: true,
   //   minimumVersion: '12'
   // },
-  // dynamicLinkDomain: 'example.page.link'
+  dynamicLinkDomain: 'shoppinglisttrackerapp.page.link'
 };
 
 const updateListsRef = async (boardId, newLists) => {
@@ -38,6 +38,8 @@ const getBoardsRef = (email) => ref(db, `users/${email.replace('.', '%2e')}/boar
 
 const getBoardRef = (boardId) => ref(db, `boards/${boardId}`);
 
+const getBoardNameRef = (boardId) => ref(db, `boards/${boardId}/name`);
+
 const saveNewBoard = async (name, email) => {
   const newBoardsRef = push(ref(db, 'boards'));
   const id = newBoardsRef.key;
@@ -46,9 +48,17 @@ const saveNewBoard = async (name, email) => {
   return id;
 };
 
-const addBoardToUser = async (email, boardId, boardName) => {
+const addBoardToUser = async (email, boardId) => {
   await set(ref(db, `boards/${boardId}/users/${email.replace('.', '%2e')}`), true);
-  await set(ref(db, `users/${email.replace('.', '%2e')}/boards/${boardId}`), boardName);
+  await set(ref(db, `users/${email.replace('.', '%2e')}/boards/${boardId}`), true);
+};
+
+const deleteBoardById = async (boardId, email) => {
+  await set(ref(db, `users/${email.replace('.', '%2e')}/boards/${boardId}`), false);
+};
+
+const renameBoardById = async (boardId, newName) => {
+  await set(ref(db, `boards/${boardId}/name`), newName);
 };
 
 export {
@@ -57,5 +67,8 @@ export {
   getBoardsRef,
   getBoardRef,
   saveNewBoard,
-  addBoardToUser
+  addBoardToUser,
+  deleteBoardById,
+  renameBoardById,
+  getBoardNameRef
 };

@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
-import { AppStyles, WHITE_COLOR, LIGHT_BACKGROUND_COLOR } from '../AppStyles';
+
+import { AppStyles, WHITE_COLOR, LIGHT_BACKGROUND_COLOR } from '../../AppStyles';
 
 const ItemInputField = ({ onAddItem, placeholder }) => {
   const [item, setItem] = useState('');

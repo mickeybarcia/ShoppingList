@@ -2,23 +2,24 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
-import { LIGHT_BACKGROUND_COLOR, WHITE_COLOR } from '../AppStyles';
+
+import { AppStyles, LIGHT_BACKGROUND_COLOR } from '../AppStyles';
 
 const ListItem = ({ item, onSwitchItemStatus, onDeleteItem, showLowOnly }) => {
   const show = !showLowOnly || (showLowOnly && item.isLow);
   return (
     show && (
-      <View style={styles.container}>
+      <View style={AppStyles.listContainer}>
         <View style={styles.indexContainer}>
           <TouchableOpacity onPress={onSwitchItemStatus}>
-            {item.isLow && <MaterialIcons name="warning" size={18} color="#fff" />}
-            {!item.isLow && <MaterialIcons name="check" size={18} color="#fff" />}
+            {item.isLow && <MaterialIcons name="warning" size={18} color="white" />}
+            {!item.isLow && <MaterialIcons name="check" size={18} color="white" />}
           </TouchableOpacity>
         </View>
-        <View style={styles.itemContainer}>
-          <Text style={styles.item}>{item.name}</Text>
+        <View style={AppStyles.itemContainer}>
+          <Text style={AppStyles.item}>{item.name}</Text>
           <TouchableOpacity onPress={onDeleteItem}>
-            <MaterialIcons style={styles.delete} name="delete" size={18} color="#fff" />
+            <MaterialIcons style={AppStyles.delete} name="delete" size={18} color="white" />
           </TouchableOpacity>
         </View>
       </View>
@@ -36,13 +37,6 @@ ListItem.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    flex: 1,
-    backgroundColor: '#1E1A3C',
-    marginTop: 10,
-    maxWidth: 350
-  },
   indexContainer: {
     backgroundColor: LIGHT_BACKGROUND_COLOR,
     borderRadius: 12,
@@ -51,24 +45,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 30,
     height: 30
-  },
-  itemContainer: {
-    backgroundColor: LIGHT_BACKGROUND_COLOR,
-    borderRadius: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    minHeight: 30
-  },
-  item: {
-    color: WHITE_COLOR,
-    width: '90%',
-    fontSize: 16
-  },
-  delete: {
-    marginLeft: 10
   }
 });

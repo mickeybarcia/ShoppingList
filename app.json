@@ -16,8 +16,9 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
+      "associatedDomains": ["applinks:shoppinglisttrackerapp.page.link"],
       "supportsTablet": true,
-      "bundleIdentifier": "com.mickey.shoppinglist"
+      "bundleIdentifier": "com.mickey.shoppinglisttracker"
     },
     "android": {
       "adaptiveIcon": {
