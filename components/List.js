@@ -37,12 +37,12 @@ const List = ({
           {!showRenameList && (
             <View style={styles.titleContainer}>
               <TouchableOpacity
-                style={{ visibility: showLowOnly ? 'hidden' : 'shown' }}
+                style={{ visibility: showLowOnly ? 'hidden' : 'visible' }}
                 onPress={onMoveListUp}>
                 <MaterialIcons name="arrow-upward" size={18} color={LIGHT_BACKGROUND_COLOR} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ visibility: showLowOnly ? 'hidden' : 'shown' }}
+                style={{ visibility: showLowOnly ? 'hidden' : 'visible' }}
                 onPress={onMoveListDown}>
                 <MaterialIcons name="arrow-downward" size={18} color={LIGHT_BACKGROUND_COLOR} />
               </TouchableOpacity>
