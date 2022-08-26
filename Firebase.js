@@ -16,16 +16,14 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const actionCodeSettings = {
-  url: 'http://localhost:19006/', //https://shopping-list-tracker.herokuapp.com/
+  url:
+    process.env.NODE_ENV == 'development'
+      ? 'http://localhost:19006/'
+      : 'https://shopping-list-tracker.herokuapp.com/',
   handleCodeInApp: true,
   iOS: {
     bundleId: 'com.mickey.shoppinglisttracker'
   },
-  // android: {
-  //   packageName: 'com.example.android',
-  //   installApp: true,
-  //   minimumVersion: '12'
-  // },
   dynamicLinkDomain: 'shoppinglisttrackerapp.page.link'
 };
 
