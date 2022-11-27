@@ -1,6 +1,7 @@
 {
   "name": "shoppinglist",
   "version": "1.0.0",
+  "homepage": "http://mickeybarcia.github.io/ShoppingList",
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
@@ -10,7 +11,9 @@
     "lint": "eslint . --fix",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
     "build": "expo build:web",
-    "test": "jest"
+    "test": "jest",
+    "predeploy" : "npm run build",
+    "deploy" : "gh-pages -d build"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "~1.17.3",
