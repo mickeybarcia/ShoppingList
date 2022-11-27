@@ -31,7 +31,7 @@ const actionCodeSettings = {
   url:
     process.env.NODE_ENV == 'development'
       ? 'http://localhost:19006/'
-      : 'https://shopping-list-tracker.herokuapp.com/',
+      : 'https://mickeybarcia.github.io/ShoppingList/',
   handleCodeInApp: true,
   iOS: {
     bundleId: 'com.mickey.shoppinglisttracker'
