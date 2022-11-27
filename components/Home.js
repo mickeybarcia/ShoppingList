@@ -166,7 +166,6 @@ export default function Home() {
         <Form
           onComplete={signIn}
           buttonText={'sign in / sign up'}
-          initialValue={'mickeydbarcia@gmail.com'}
           placeholder={'mickey@mickey.com'}
         />
       )}
