@@ -1,36 +1,23 @@
 import PropTypes from 'prop-types';
 import { View, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { onValue } from 'firebase/database';
 
-import { getBoardNameRef } from '../Firebase';
 import { AppStyles } from '../AppStyles';
+import { useAppContext } from '../app-context';
 
-const BoardName = ({ id, onLoadBoard }) => {
+const BoardName = ({ id }) => {
   const [boardName, setBoardName] = useState(null);
-
-  const loadBoardName = async () => {
-    const boardRef = getBoardNameRef(id);
-    onValue(
-      boardRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setBoardName(snapshot.val());
-        }
-      },
-      (error) => console.log(error)
-    );
-  };
+  const { loadBoardName, setBoardIdCtx } = useAppContext();
 
   useEffect(() => {
-    loadBoardName();
+    loadBoardName(id, setBoardName, (error) => console.log(error));
   }, []);
 
   return (
     boardName && (
       <View style={AppStyles.listContainer}>
         <View style={AppStyles.itemContainer}>
-          <Text style={AppStyles.item} onPress={() => onLoadBoard(id)}>
+          <Text style={AppStyles.item} onPress={() => setBoardIdCtx(id)}>
             {boardName}
           </Text>
         </View>
@@ -40,7 +27,6 @@ const BoardName = ({ id, onLoadBoard }) => {
 };
 
 BoardName.propTypes = {
-  onLoadBoard: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired
 };
 

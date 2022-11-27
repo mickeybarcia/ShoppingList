@@ -25,14 +25,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 5,
+    padding: 8,
     paddingRight: 10,
     paddingLeft: 10,
-    margin: 3
+    margin: 5
   },
   text: {
     color: BACKGROUND_COLOR,
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '400'
   }
 });

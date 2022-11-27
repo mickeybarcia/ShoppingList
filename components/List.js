@@ -5,17 +5,17 @@ import PropTypes from 'prop-types';
 
 import ItemInputField from './shared/InputField';
 import ListItem from './ListItem';
-import { AppStyles, LIGHT_BACKGROUND_COLOR, WHITE_COLOR } from '../AppStyles';
+import { AppStyles, LIGHT_BACKGROUND_COLOR, WHITE_COLOR, ICON_SIZE } from '../AppStyles';
 
 const List = ({
   name,
   items,
+  showLowOnly,
+  onRenameList,
   onAddItem,
   onDeleteList,
   onDeleteItem,
   onSwitchItemStatus,
-  showLowOnly,
-  onRenameList,
   onMoveListDown,
   onMoveListUp
 }) => {
@@ -39,12 +39,12 @@ const List = ({
               <TouchableOpacity
                 style={{ visibility: showLowOnly ? 'hidden' : 'visible' }}
                 onPress={onMoveListUp}>
-                <MaterialIcons name="arrow-upward" size={18} color={LIGHT_BACKGROUND_COLOR} />
+                <MaterialIcons name="arrow-upward" size={24} color={LIGHT_BACKGROUND_COLOR} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ visibility: showLowOnly ? 'hidden' : 'visible' }}
                 onPress={onMoveListDown}>
-                <MaterialIcons name="arrow-downward" size={18} color={LIGHT_BACKGROUND_COLOR} />
+                <MaterialIcons name="arrow-downward" size={24} color={LIGHT_BACKGROUND_COLOR} />
               </TouchableOpacity>
               <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => setShowRenameList(true)}>
                 <Text style={styles.heading}>{name}</Text>
@@ -63,8 +63,8 @@ const List = ({
             />
           )}
           {!showLowOnly && !showRenameList && (
-            <TouchableOpacity onPress={() => onDeleteList()}>
-              <MaterialIcons style={AppStyles.delete} name="delete" size={18} color="white" />
+            <TouchableOpacity onPress={onDeleteList}>
+              <MaterialIcons style={AppStyles.delete} name="delete" size={ICON_SIZE} color="white" />
             </TouchableOpacity>
           )}
           {showRenameList && (

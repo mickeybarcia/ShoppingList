@@ -5,16 +5,18 @@ import PropTypes from 'prop-types';
 import { AppStyles } from '../AppStyles';
 import BoardName from './BoardName';
 import Form from './Form';
+import { useAppContext } from '../app-context';
 
-const BoardForm = ({ onCreateBoard, onLoadBoard, boardIds }) => {
+const BoardForm = ({ createBoard }) => {
+  const { boardIds } = useAppContext();
   return (
     <View>
-      <Form onComplete={onCreateBoard} buttonText={'create new board'} placeholder={'new board'} />
+      <Form onComplete={createBoard} buttonText={'create new board'} placeholder={'new board'} />
       {boardIds && (
         <View style={{ marginTop: 30 }}>
           <Text style={AppStyles.title}>select from my boards</Text>
           {boardIds.map((id, index) => {
-            return <BoardName key={index} onLoadBoard={onLoadBoard} id={id} />;
+            return <BoardName key={index} id={id} />;
           })}
         </View>
       )}
@@ -23,9 +25,7 @@ const BoardForm = ({ onCreateBoard, onLoadBoard, boardIds }) => {
 };
 
 BoardForm.propTypes = {
-  onCreateBoard: PropTypes.func.isRequired,
-  onLoadBoard: PropTypes.func.isRequired,
-  boardIds: PropTypes.array.isRequired
+  createBoard: PropTypes.func.isRequired
 };
 
 export default BoardForm;

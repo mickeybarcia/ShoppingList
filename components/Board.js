@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import ListComponent from './List';
 import InputField from './shared/InputField';
 import { AppStyles } from '../AppStyles';
+import { useAppContext } from '../app-context';
 
 const Item = (name, isLow = false) => {
   return { name, isLow };
@@ -14,7 +15,9 @@ const List = (name, items = []) => {
   return { name, items };
 };
 
-const Board = ({ lists, showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
+const Board = ({ showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
+  const { lists } = useAppContext();
+
   const addList = (listName) => {
     if (listName == '') return;
     const newLists = [...lists];
@@ -79,7 +82,7 @@ const Board = ({ lists, showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
 
   return (
     <View>
-      <ScrollView>
+      <ScrollView style={{ paddingBottom: 150 }}>
         <View>
           <Text style={AppStyles.subHeading}>show only low stock items</Text>
         </View>
@@ -112,7 +115,6 @@ const Board = ({ lists, showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
 };
 
 Board.propTypes = {
-  lists: PropTypes.array.isRequired,
   showLowOnly: PropTypes.bool.isRequired,
   onSwitchLowOnly: PropTypes.func.isRequired,
   onUpdateLists: PropTypes.func.isRequired

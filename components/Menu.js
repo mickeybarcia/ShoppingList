@@ -44,7 +44,6 @@ Menu.propTypes = {
   showBoardButtons: PropTypes.bool.isRequired,
   logout: PropTypes.func.isRequired,
   switchBoard: PropTypes.func.isRequired,
-  renameBoard: PropTypes.func.isRequired,
   showRenameBoard: PropTypes.bool.isRequired,
   toggleRenameBoard: PropTypes.func.isRequired,
   deleteBoard: PropTypes.func.isRequired,

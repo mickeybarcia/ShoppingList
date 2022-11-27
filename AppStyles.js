@@ -1,8 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 const WHITE_COLOR = '#fff';
-const LIGHT_BACKGROUND_COLOR = '#3E3364';
-const BACKGROUND_COLOR = '#1E1A3C';
+const LIGHT_BACKGROUND_COLOR = '#5CB3EA';
+const BACKGROUND_COLOR = '#1298ED';
+
+const LIST_ITEM_HEIGHT = 35
+const ICON_SIZE = 20
 
 const AppStyles = StyleSheet.create({
   inputField: {
@@ -31,8 +34,8 @@ const AppStyles = StyleSheet.create({
     color: WHITE_COLOR,
     fontSize: 30,
     fontWeight: '600',
-    marginTop: 30,
-    paddingBottom: 15
+    marginTop: 10,
+    marginBottom: 10
   },
   delete: {
     marginLeft: 10
@@ -46,7 +49,7 @@ const AppStyles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    minHeight: 30
+    minHeight: 35
   },
   item: {
     color: WHITE_COLOR,
@@ -56,10 +59,10 @@ const AppStyles = StyleSheet.create({
   listContainer: {
     flexDirection: 'row',
     flex: 1,
-    backgroundColor: '#1E1A3C',
+    backgroundColor: BACKGROUND_COLOR,
     marginTop: 10,
     maxWidth: 350
   }
 });
 
-export { WHITE_COLOR, BACKGROUND_COLOR, LIGHT_BACKGROUND_COLOR, AppStyles };
+export { WHITE_COLOR, BACKGROUND_COLOR, LIGHT_BACKGROUND_COLOR, LIST_ITEM_HEIGHT, ICON_SIZE, AppStyles };
