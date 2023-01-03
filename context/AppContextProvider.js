@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Linking } from 'react-native';
 
-import * as fb from './Firebase';
-
-const AppContext = React.createContext();
+import * as fb from '../Firebase';
+import AppContext from './AppContext';
 
 const BOARD_KEY = 'boardId';
 const EMAIL_KEY = 'emailForSignIn';
 
-export function useAppContext() {
-  return React.useContext(AppContext);
-}
-
-export function AppContextProvider({ children }) {
+const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [boardId, setBoardId] = useState(null);
   const [boardName, setBoardName] = useState(null);
@@ -177,4 +172,6 @@ export function AppContextProvider({ children }) {
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-}
+};
+
+export default AppContextProvider;

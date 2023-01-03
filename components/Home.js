@@ -5,32 +5,30 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import Board from './Board';
 import BoardForm from './BoardForm';
-import HideKeyboard from './shared/HideKeyboard';
 import Menu from './Menu';
 import Form from './Form';
 import { AppStyles } from '../AppStyles';
-import { useAppContext } from '../app-context';
+import PropTypes from 'prop-types';
 
-export default function Home() {
+const Home = ({
+  user,
+  boardId,
+  boardName,
+  lists,
+  loadBoard,
+  loadHome,
+  loadBoards,
+  emailSignInLink,
+  renameBoard: renameBoardCtx,
+  createBoard: createBoardCtx,
+  resetBoard: resetBoardCtx,
+  shareBoard: shareBoardCtx,
+  updateLists: updateListsCtx,
+  deleteBoard: deleteBoardCtx,
+  logout: logoutCtx
+}) => {
+  const APP_NAME = "mickey's shopping list";
   const keyboardScrollView = useRef();
-  const {
-    user,
-    boardId,
-    boardName,
-    lists,
-    loadBoard,
-    loadHome,
-    loadBoards,
-    emailSignInLink,
-    renameBoard: renameBoardCtx,
-    createBoard: createBoardCtx,
-    resetBoard: resetBoardCtx,
-    shareBoard: shareBoardCtx,
-    updateLists: updateListsCtx,
-    deleteBoard: deleteBoardCtx,
-    logout: logoutCtx
-  } = useAppContext();
-
   const [message, setMessage] = useState('');
   const [showLowOnly, setShowLowOnly] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -114,7 +112,12 @@ export default function Home() {
   const MenuButton = () => {
     return (
       <TouchableOpacity onPress={() => setShowMenu(!showMenu)}>
-        <MaterialIcons name="menu" size={40} color="white" style={{marginBottom: showMenu ? 20 : 0}} />
+        <MaterialIcons
+          name="menu"
+          size={40}
+          color="white"
+          style={{ marginBottom: showMenu ? 20 : 0 }}
+        />
       </TouchableOpacity>
     );
   };
@@ -129,7 +132,7 @@ export default function Home() {
     );
   };
   return (
-    <View style={styles.container}>
+    <View style={styles.container} keyboardDismissMode="interactive">
       <View style={styles.topBar}>
         <View>
           {user && <MenuButton />}
@@ -146,26 +149,31 @@ export default function Home() {
             showShareBoard={showShareBoard}
           />
         </View>
-        <Text style={AppStyles.title}>{boardName || "mickey's shopping list"}</Text>
+        <Text style={AppStyles.title}>{boardName || APP_NAME}</Text>
       </View>
       <Message />
       {loading && <ActivityIndicator animating={loading} />}
-      <HideKeyboard>
-        <KeyboardAwareScrollView ref={keyboardScrollView} extraHeight={150}>
-          {lists && !showShareBoard && !showRenameBoard && (
-            <Board
-              showLowOnly={showLowOnly}
-              onSwitchLowOnly={() => setShowLowOnly(!showLowOnly)}
-              onUpdateLists={updateLists}
-            />
-          )}
-          {!loading && user && !boardId && <BoardForm createBoard={createBoard} />}
-        </KeyboardAwareScrollView>
-      </HideKeyboard>
+      <KeyboardAwareScrollView
+        ref={keyboardScrollView}
+        showsVerticalScrollIndicator={false}
+        extraHeight={150}
+        keyboardShouldPersistTaps="handled"
+      >
+        {lists && !showShareBoard && !showRenameBoard && (
+          <Board
+            lists={lists}
+            showLowOnly={showLowOnly}
+            onSwitchLowOnly={() => setShowLowOnly(!showLowOnly)}
+            onUpdateLists={updateLists}
+          />
+        )}
+        {!loading && user && !boardId && <BoardForm createBoard={createBoard} />}
+      </KeyboardAwareScrollView>
       {!loading && !user && (
         <Form
           onComplete={signIn}
-          buttonText={'sign in / sign up'}
+          buttonText={'sign in with email'}
+          initialValue={'mickeydbarcia@gmail.com'}
           placeholder={'mickey@mickey.com'}
         />
       )}
@@ -181,7 +189,7 @@ export default function Home() {
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -196,3 +204,23 @@ const styles = StyleSheet.create({
 });
 
 // https://javascript.plainenglish.io/build-a-todo-list-app-using-react-native-526f8fe11ff1
+
+Home.propTypes = {
+  user: PropTypes.object,
+  boardId: PropTypes.string,
+  boardName: PropTypes.string,
+  lists: PropTypes.array,
+  loadBoard: PropTypes.func.isRequired,
+  loadHome: PropTypes.func.isRequired,
+  loadBoards: PropTypes.func.isRequired,
+  emailSignInLink: PropTypes.func.isRequired,
+  renameBoard: PropTypes.func.isRequired,
+  createBoard: PropTypes.func.isRequired,
+  resetBoard: PropTypes.func.isRequired,
+  shareBoard: PropTypes.func.isRequired,
+  updateLists: PropTypes.func.isRequired,
+  deleteBoard: PropTypes.func.isRequired,
+  logout: PropTypes.func.isRequired
+};
+
+export default Home;

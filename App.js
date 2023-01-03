@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import Home from './components/Home';
-import { AppContextProvider } from './app-context';
+import HomeWrapper from './components/HomeWrapper';
+import AppContextProvider from './context/AppContextProvider';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 import { BACKGROUND_COLOR } from './AppStyles';
 
@@ -11,7 +11,7 @@ export default function App() {
     <View style={styles.container}>
       <AppContextProvider>
         <ErrorBoundary>
-          <Home />
+          <HomeWrapper />
         </ErrorBoundary>
       </AppContextProvider>
     </View>

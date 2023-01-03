@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
 
 import { AppStyles } from '../AppStyles';
-import { useAppContext } from '../app-context';
+import useAppContext from '../context/useAppContext';
 
 const BoardName = ({ id }) => {
   const [boardName, setBoardName] = useState(null);

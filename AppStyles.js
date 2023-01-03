@@ -4,8 +4,8 @@ const WHITE_COLOR = '#fff';
 const LIGHT_BACKGROUND_COLOR = '#5CB3EA';
 const BACKGROUND_COLOR = '#1298ED';
 
-const LIST_ITEM_HEIGHT = 35
-const ICON_SIZE = 20
+const LIST_ITEM_HEIGHT = 35;
+const ICON_SIZE = 20;
 
 const AppStyles = StyleSheet.create({
   inputField: {
@@ -65,4 +65,11 @@ const AppStyles = StyleSheet.create({
   }
 });
 
-export { WHITE_COLOR, BACKGROUND_COLOR, LIGHT_BACKGROUND_COLOR, LIST_ITEM_HEIGHT, ICON_SIZE, AppStyles };
+export {
+  WHITE_COLOR,
+  BACKGROUND_COLOR,
+  LIGHT_BACKGROUND_COLOR,
+  LIST_ITEM_HEIGHT,
+  ICON_SIZE,
+  AppStyles
+};

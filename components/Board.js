@@ -1,11 +1,10 @@
 import React from 'react';
-import { ScrollView, View, Text, Switch, StyleSheet } from 'react-native';
+import { View, Text, Switch, StyleSheet, Keyboard, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 
 import ListComponent from './List';
 import InputField from './shared/InputField';
 import { AppStyles } from '../AppStyles';
-import { useAppContext } from '../app-context';
 
 const Item = (name, isLow = false) => {
   return { name, isLow };
@@ -15,13 +14,15 @@ const List = (name, items = []) => {
   return { name, items };
 };
 
-const Board = ({ showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
-  const { lists } = useAppContext();
+const Board = ({ lists, showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
+
+  const dismissKeyboard = () => Platform.OS != 'web' && Keyboard.dismiss();
 
   const addList = (listName) => {
     if (listName == '') return;
     const newLists = [...lists];
     newLists.push(List(listName));
+    dismissKeyboard();
     onUpdateLists(newLists);
   };
 
@@ -34,6 +35,7 @@ const Board = ({ showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
     if (itemName == '') return;
     const newLists = [...lists];
     newLists[listIndex].items = [...newLists[listIndex].items, Item(itemName)];
+    dismissKeyboard();
     onUpdateLists(newLists);
   };
 
@@ -81,40 +83,39 @@ const Board = ({ showLowOnly, onSwitchLowOnly, onUpdateLists }) => {
   };
 
   return (
-    <View>
-      <ScrollView style={{ paddingBottom: 150 }}>
-        <View>
-          <Text style={AppStyles.subHeading}>show only low stock items</Text>
-        </View>
-        <Switch style={styles.switch} onValueChange={onSwitchLowOnly} value={showLowOnly} />
-        {lists.map(({ name, items }, index) => {
-          return (
-            <View key={index}>
-              <ListComponent
-                index={index}
-                name={name}
-                items={items}
-                showLowOnly={showLowOnly}
-                onDeleteList={() => deleteList(index)}
-                onAddItem={(itemName) => addItem(index, itemName)}
-                onDeleteItem={(itemIndex) => deleteItem(index, itemIndex)}
-                onSwitchItemStatus={(itemIndex) => switchItemStatus(index, itemIndex)}
-                onRenameList={(name) => renameList(index, name)}
-                onMoveListUp={() => moveListUp(index)}
-                onMoveListDown={() => moveListDown(index)}
-              />
-            </View>
-          );
-        })}
-        {!showLowOnly && (
-          <InputField onAddItem={(listName) => addList(listName)} placeholder={'new list'} />
-        )}
-      </ScrollView>
+    <View style={{ paddingBottom: 150 }}>
+      <View>
+        <Text style={AppStyles.subHeading}>show only low stock items</Text>
+      </View>
+      <Switch style={styles.switch} onValueChange={onSwitchLowOnly} value={showLowOnly} />
+      {lists.map(({ name, items }, index) => {
+        return (
+          <View key={index}>
+            <ListComponent
+              index={index}
+              name={name}
+              items={items}
+              showLowOnly={showLowOnly}
+              onDeleteList={() => deleteList(index)}
+              onAddItem={(itemName) => addItem(index, itemName)}
+              onDeleteItem={(itemIndex) => deleteItem(index, itemIndex)}
+              onSwitchItemStatus={(itemIndex) => switchItemStatus(index, itemIndex)}
+              onRenameList={(name) => renameList(index, name)}
+              onMoveListUp={() => moveListUp(index)}
+              onMoveListDown={() => moveListDown(index)}
+            />
+          </View>
+        );
+      })}
+      {!showLowOnly && (
+        <InputField onAddItem={(listName) => addList(listName)} placeholder={'new list'} />
+      )}
     </View>
   );
 };
 
 Board.propTypes = {
+  lists: PropTypes.array.isRequired,
   showLowOnly: PropTypes.bool.isRequired,
   onSwitchLowOnly: PropTypes.func.isRequired,
   onUpdateLists: PropTypes.func.isRequired

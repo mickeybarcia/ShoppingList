@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { AppStyles } from '../AppStyles';
 import BoardName from './BoardName';
 import Form from './Form';
-import { useAppContext } from '../app-context';
+import useAppContext from '../context/useAppContext';
 
 const BoardForm = ({ createBoard }) => {
   const { boardIds } = useAppContext();
