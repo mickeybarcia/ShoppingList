@@ -1,11 +1,11 @@
 {
   "files": {
-    "app.js": "/ShoppingList/static/js/app.b9462284.chunk.js",
-    "app.js.map": "/ShoppingList/static/js/app.b9462284.chunk.js.map",
-    "runtime~app.js": "/ShoppingList/static/js/runtime~app.340acf62.js",
-    "runtime~app.js.map": "/ShoppingList/static/js/runtime~app.340acf62.js.map",
-    "static/js/2.49fa3468.chunk.js": "/ShoppingList/static/js/2.49fa3468.chunk.js",
-    "static/js/2.49fa3468.chunk.js.map": "/ShoppingList/static/js/2.49fa3468.chunk.js.map",
+    "app.js": "/ShoppingList/static/js/app.97431aab.chunk.js",
+    "app.js.map": "/ShoppingList/static/js/app.97431aab.chunk.js.map",
+    "runtime~app.js": "/ShoppingList/static/js/runtime~app.a1c42980.js",
+    "runtime~app.js.map": "/ShoppingList/static/js/runtime~app.a1c42980.js.map",
+    "static/js/2.be8e4782.chunk.js": "/ShoppingList/static/js/2.be8e4782.chunk.js",
+    "static/js/2.be8e4782.chunk.js.map": "/ShoppingList/static/js/2.be8e4782.chunk.js.map",
     "fonts/AntDesign.ttf": "/ShoppingList/./fonts/AntDesign.ttf",
     "fonts/Entypo.ttf": "/ShoppingList/./fonts/Entypo.ttf",
     "fonts/Feather.ttf": "/ShoppingList/./fonts/Feather.ttf",
@@ -24,11 +24,11 @@
     "index.html": "/ShoppingList/index.html",
     "manifest.json": "/ShoppingList/manifest.json",
     "serve.json": "/ShoppingList/serve.json",
-    "static/js/2.49fa3468.chunk.js.LICENSE.txt": "/ShoppingList/static/js/2.49fa3468.chunk.js.LICENSE.txt"
+    "static/js/2.be8e4782.chunk.js.LICENSE.txt": "/ShoppingList/static/js/2.be8e4782.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime~app.340acf62.js",
-    "static/js/2.49fa3468.chunk.js",
-    "static/js/app.b9462284.chunk.js"
+    "static/js/runtime~app.a1c42980.js",
+    "static/js/2.be8e4782.chunk.js",
+    "static/js/app.97431aab.chunk.js"
   ]
 }
