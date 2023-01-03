@@ -33,9 +33,9 @@ const actionCodeSettings = {
       ? 'http://localhost:19006/'
       : 'https://mickeybarcia.github.io/ShoppingList/',
   handleCodeInApp: true,
-  iOS: {
-    bundleId: 'com.mickey.shoppinglisttracker'
-  },
+  // iOS: {
+  //   bundleId: 'com.mickey.shoppinglisttracker'
+  // },
   dynamicLinkDomain: 'shoppinglisttrackerapp.page.link'
 };
 
