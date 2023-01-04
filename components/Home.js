@@ -173,7 +173,7 @@ const Home = ({
         <Form
           onComplete={signIn}
           buttonText={'sign in with email'}
-          initialValue={'mickeydbarcia@gmail.com'}
+          initialValue={'mickey@mickey.com'}
           placeholder={'mickey@mickey.com'}
         />
       )}
